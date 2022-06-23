@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/btnguyen2k/goyai)](https://goreportcard.com/report/github.com/btnguyen2k/goyai)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/btnguyen2k/goyai)](https://pkg.go.dev/github.com/btnguyen2k/goyai)
 [![Actions Status](https://github.com/btnguyen2k/goyai/workflows/goyai/badge.svg)](https://github.com/btnguyen2k/goyai/actions)
-[![codecov](https://codecov.io/gh/btnguyen2k/goyai/branch/master/graph/badge.svg?token=0L23UTJHOZ)](https://codecov.io/gh/btnguyen2k/goyai)
+[![codecov](https://codecov.io/gh/btnguyen2k/goyai/branch/main/graph/badge.svg?token=x12xW1YfiY)](https://codecov.io/gh/btnguyen2k/goyai)
 [![Release](https://img.shields.io/github/release/btnguyen2k/goyai.svg?style=flat-square)](RELEASE-NOTES.md)
 
 Yet Another I18n package for Go (Golang).
