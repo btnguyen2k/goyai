@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/btnguyen2k/consu/reddo"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -34,10 +34,10 @@ type LocalizeConfig struct {
 	//
 	// Rule for picking plural form:
 	// - if PluralCount is negative number, nil or not cast-able to integer, the "other" form is chosen.
-	// - if PluralCount is 0, the "zero" form is chosen.
-	// - if PluralCount is 1, one of "one"/"few"/"other" forms is chosen, priority is from left to right (e.g. "one" form has the highest priority, if absent, the next one is checked)
-	// - if PluralCount is 2, one of "two"/"many"/"other" forms is chosen, priority is from left to right (e.g. "two" form has the highest priority, if absent, the next one is checked)
-	// - if PluralCount is 3 or greater, one of "many"/"other" forms is chosen, priority is from left to right (e.g. "many" form has the highest priority, if absent, the next one is checked)
+	// - if PluralCount = 0, the "zero" form is chosen.
+	// - if PluralCount = 1, one of "one"/"few"/"other" forms is chosen, priority is from left to right (e.g. "one" form has the highest priority, if absent, the next one is checked)
+	// - if PluralCount = 2, one of "two"/"many"/"other" forms is chosen, priority is from left to right (e.g. "two" form has the highest priority, if absent, the next one is checked)
+	// - if PluralCount > 2, one of "many"/"other" forms is chosen, priority is from left to right (e.g. "many" form has the highest priority, if absent, the next one is checked)
 	PluralCount interface{}
 
 	// DefaultMessage holds the default message where there is no localized one.

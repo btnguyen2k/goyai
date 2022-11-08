@@ -13,6 +13,7 @@ Yet Another I18n package for Go (Golang).
 - Support localized text messages, with plural forms.
 - Support template string with named variables following [text/template](http://golang.org/pkg/text/template/) syntax.
 - Support language files in JSON and YAML formats.
+- Can be used in/integrated with [html/template](http://golang.org/pkg/html/template/) (since [v0.2.0](RELEASE-NOTES.md)).
 
 ## Installation
 
@@ -22,19 +23,20 @@ go get github.com/btnguyen2k/goyai
 
 ## Usage & Documentation
 
-Package documentation is available at https://pkg.go.dev/github.com/btnguyen2k/goyai.
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/btnguyen2k/goyai)](https://pkg.go.dev/github.com/btnguyen2k/goyai)
 
 **Language file format**
 
-`goyai` supports language file in JSON or YAML formats. Here is an example of language file in YAML:
+`goyai` supports language files in JSON and YAML (1.2) formats. Here is an example of language file in YAML:
 
 ```yaml
 ---
 en:
   _name: English
   hello: Hello, world!
+  hello_param: Hello buddy {{.name}}
   remaining_tasks:
-    zero: Congratulation! You are free now.
+    zero: Congratulation {{.who}}! You are free now.
     one: There is 1 task left.
     two: There are 2 tasks left.
     few: There are a few tasks left.
@@ -44,8 +46,9 @@ en:
 vi:
   _name: Tiếng Việt
   hello: Xin chào
+  hello_param: Chào bạn {{.name}}
   remaining_tasks:
-    zero: Chúc mừng! Bạn đã hoàn thành công việc.
+    zero: Chúc mừng {{.who}}! Bạn đã hoàn thành công việc.
     one: Vẫn còn 1 công việc nữa cần hoàn thành.
     two: Còn 1 công việc nữa cần hoàn thành.
     few: Vẫn còn vài công việc nữa cần hoàn thành.
@@ -71,7 +74,7 @@ if err != nil {
 Language messages can spread multiple files in a directory and be loaded in one go:
 
 ```go
-i18n, err := BuildI18n(goyai.I18nOptions{ConfigFileOrDir: "./languages/", goyai.I18nFileFormat: goyai.Auto, DefaultLocale: "en"})
+i18n, err := BuildI18n(goyai.I18nOptions{ConfigFileOrDir: "./languages/", I18nFileFormat: goyai.Auto, DefaultLocale: "en"})
 ```
 
 **Localize messages via I18n instance**
@@ -80,35 +83,51 @@ i18n, err := BuildI18n(goyai.I18nOptions{ConfigFileOrDir: "./languages/", goyai.
 // output "Xin chào"
 fmt.Println(i18n.Localize("vi", "hello"))
 
-// locale "nf" not exist, fall back to default locale "en"
+// locale "nf" does not exist, fall back to default locale "en"
 // output "Hello, world!"
 fmt.Println(i18n.Localize("nf", "hello"))
 
-// output "Congratulation! You are free now."
-fmt.Println(i18n.Localize("en", "remaining_tasks", &goyai.LocalizeConfig{PluralCount: 0}))
+// Pass template data, output "Hello buddy Thanh"
+fmt.Println(i18n.Localize("en", "hello_param", goyai.LocalizeConfig{TemplateData: map[string]interface{}{"name": "Thanh"}}))
 
-// output "There is 1 task left."
-fmt.Println(i18n.Localize("en", "remaining_tasks", &goyai.LocalizeConfig{PluralCount: 1}))
+// Plural form, output "There is 1 task left."
+fmt.Println(i18n.Localize("en", "remaining_tasks", goyai.LocalizeConfig{PluralCount: 1}))
 
-// output "There are 2 tasks left."
-fmt.Println(i18n.Localize("en", "remaining_tasks", &goyai.LocalizeConfig{PluralCount: 2}))
+// Plural form, output "There are 2 tasks left."
+fmt.Println(i18n.Localize("en", "remaining_tasks", goyai.LocalizeConfig{PluralCount: 2}))
 
-// all these commands output "Hmmm!"
+// Plural form, these commands output "Hmmm!"
 fmt.Println(i18n.Localize("en", "remaining_tasks")) // no PluralCount specified, plural form "other" is used
-fmt.Println(i18n.Localize("en", "remaining_tasks", &goyai.LocalizeConfig{PluralCount: 3}))  // plural form "other" is used
-fmt.Println(i18n.Localize("en", "remaining_tasks", &goyai.LocalizeConfig{PluralCount: -1})) // plural form "other" is used
+fmt.Println(i18n.Localize("en", "remaining_tasks", goyai.LocalizeConfig{PluralCount: -1})) // plural form "other" is used
+
+// Plural form, output "There are many tasks left."
+fmt.Println(i18n.Localize("en", "remaining_tasks", goyai.LocalizeConfig{PluralCount: 3}))
+
+// Plural form & pass template data, output "Congratulation btnguyen2k! You are free now."
+fmt.Println(i18n.Localize("en", "remaining_tasks", goyai.LocalizeConfig{PluralCount: 0, TemplateData: map[string]interface{}{"name": "btnguyen2k"}}))
 ```
 
-**Plural form**
+**Plural forms**
 
-A localized message can have several plural forms, specified by `zero`, `one`, `two`, `few`, `many` and `other` sections in the language file.
+A localized message can have several plural forms, specified by `zero`, `one`, `two`, `few`, `many` and `other` attributes in the language file.
 Plural form of a message is picked up based on the following rules:
-- If `PluralCount=0` the plural form `zero` is picked up. If the message text is empty then the plural form `other` is used.
-- If `PluralCount=1` the plural form `one` is picked up. If the message text is empty then the plural form `few` is chosen. If the message is, again, empty then the plural form `other` is used.
-- If `PluralCount=2` the plural form `two` is picked up. If the message text is empty then the plural form `many` is chosen. If the message is, again, empty then the plural form `other` is picked up.
-- Other cases (including the case when `PluralCount` is not specified), the plural form `other` is picked up.
+- if `PluralCount` is negative number, `nil` or not cast-able to integer, the `other` form is chosen.
+- if `PluralCount=0`, the `zero` form is chosen.
+- if `PluralCount=1`, one of `one`/`few`/`other` forms is chosen, priority is from left to right (e.g. `one` form has the highest priority, if absent, the next one is checked)
+- if `PluralCount=2`, one of `two`/`many`/`other` forms is chosen, priority is from left to right (e.g. `two` form has the highest priority, if absent, the next one is checked)
+- if `PluralCount>2`, one of `many`/`other` forms is chosen, priority is from left to right (e.g. `many` form has the highest priority, if absent, the next one is checked)
 
 If a message is defined by a simple string (e.g. `hello: Hello, world!`), the string is the content of the message's plural form `other` and all other plural forms are empty.
+
+**Used in `html/template` template**
+
+> `html/template` support requires [v0.2.0](RELEASE-NOTES.md) or higher.
+
+Assuming the `I18n` instance is pass to a `html/template` template as a model named `i18n`. Then
+- Template `The message: {{.i18n.Localize "en" "hello"}}` will be rendered as `The message: Hello, world!`.
+- Template `The message: {{.i18n.Localize "en" "hello_param" "Thanh"}}` will be rendered as `The message: Hello buddy Thanh`.
+
+> Plural form is current not supported if used in `html/template` template.
 
 ## Contributing
 
