@@ -17,7 +17,7 @@ func TestParseMessageNil(t *testing.T) {
 func TestParseMessageString(t *testing.T) {
 	testName := "TestParseMessageString"
 	msgId := "mid"
-	strOther := "Localized message, plurar form 'other'."
+	strOther := "Localized message, plural form 'other'."
 	msg, err := ParseMessage(msgId, strOther)
 	if msg == nil || err != nil {
 		t.Fatalf("%s failed: %s", testName, err)
@@ -43,12 +43,12 @@ func TestParseMessageMapStringString(t *testing.T) {
 	msgId := "mid"
 	data := map[string]string{
 		"desc":   "Message description",
-		"Zero":   "Localized message, plurar form 'zero'",
-		"one":    "Localized message, plurar form 'one'",
-		"TWO":    "Localized message, plurar form 'two'",
-		"feW":    "Localized message, plurar form 'few'",
-		" MaNy":  "Localized message, plurar form 'many'",
-		"oTHEr ": "Localized message, plurar form 'other'",
+		"Zero":   "Localized message, plural form 'zero'",
+		"one":    "Localized message, plural form 'one'",
+		"TWO":    "Localized message, plural form 'two'",
+		"feW":    "Localized message, plural form 'few'",
+		" MaNy":  "Localized message, plural form 'many'",
+		"oTHEr ": "Localized message, plural form 'other'",
 	}
 	msg, err := ParseMessage(msgId, data)
 	if msg == nil || err != nil {
@@ -58,12 +58,12 @@ func TestParseMessageMapStringString(t *testing.T) {
 	emsg := Message{
 		Id:          msgId,
 		Description: "Message description",
-		Zero:        "Localized message, plurar form 'zero'",
-		One:         "Localized message, plurar form 'one'",
-		Two:         "Localized message, plurar form 'two'",
-		Few:         "Localized message, plurar form 'few'",
-		Many:        "Localized message, plurar form 'many'",
-		Other:       "Localized message, plurar form 'other'",
+		Zero:        "Localized message, plural form 'zero'",
+		One:         "Localized message, plural form 'one'",
+		Two:         "Localized message, plural form 'two'",
+		Few:         "Localized message, plural form 'few'",
+		Many:        "Localized message, plural form 'many'",
+		Other:       "Localized message, plural form 'other'",
 	}
 	if !reflect.DeepEqual(emsg, *msg) {
 		t.Fatalf("%s failed, expect\n%#v\nbut received\n%#v", testName, emsg, *msg)
@@ -75,12 +75,12 @@ func TestParseMessageMapStringInterface(t *testing.T) {
 	msgId := "mid"
 	data := map[string]interface{}{
 		" Description ": "Message description",
-		"Zero":          "Localized message, plurar form 'zero'",
-		"one":           "Localized message, plurar form 'one'",
-		"TWO":           "Localized message, plurar form 'two'",
-		"feW":           "Localized message, plurar form 'few'",
-		" MaNy":         "Localized message, plurar form 'many'",
-		"oTHEr ":        "Localized message, plurar form 'other'",
+		"Zero":          "Localized message, plural form 'zero'",
+		"one":           "Localized message, plural form 'one'",
+		"TWO":           "Localized message, plural form 'two'",
+		"feW":           "Localized message, plural form 'few'",
+		" MaNy":         "Localized message, plural form 'many'",
+		"oTHEr ":        "Localized message, plural form 'other'",
 	}
 	msg, err := ParseMessage(msgId, data)
 	if msg == nil || err != nil {
@@ -90,12 +90,12 @@ func TestParseMessageMapStringInterface(t *testing.T) {
 	emsg := Message{
 		Id:          msgId,
 		Description: "Message description",
-		Zero:        "Localized message, plurar form 'zero'",
-		One:         "Localized message, plurar form 'one'",
-		Two:         "Localized message, plurar form 'two'",
-		Few:         "Localized message, plurar form 'few'",
-		Many:        "Localized message, plurar form 'many'",
-		Other:       "Localized message, plurar form 'other'",
+		Zero:        "Localized message, plural form 'zero'",
+		One:         "Localized message, plural form 'one'",
+		Two:         "Localized message, plural form 'two'",
+		Few:         "Localized message, plural form 'few'",
+		Many:        "Localized message, plural form 'many'",
+		Other:       "Localized message, plural form 'other'",
 	}
 	if !reflect.DeepEqual(emsg, *msg) {
 		t.Fatalf("%s failed, expect\n%#v\nbut received\n%#v", testName, emsg, *msg)
@@ -139,7 +139,7 @@ func TestMessage_pluralForm(t *testing.T) {
 	if msg == nil || err != nil {
 		t.Fatalf("%s failed: %s", testName, err)
 	}
-	expected := map[interface{}]string{"none": other, -2: other, -1: other, 0: zero, 1: one, 2: two, 3: other, 4: other}
+	expected := map[interface{}]string{"none": other, -2: other, -1: other, 0: zero, 1: one, 2: two, 3: many, 4: many}
 	for k, e := range expected {
 		v := msg.pluralFormTemplate(&LocalizeConfig{PluralCount: k})
 		if v != e {
@@ -159,8 +159,8 @@ func TestMessage_pluralForm(t *testing.T) {
 	}
 }
 
-func TestMessage_pluralForm_alternative_zero(t *testing.T) {
-	testName := "TestMessage_pluralForm_alternative_zero"
+func TestMessage_pluralForm_ZeroAsOther(t *testing.T) {
+	testName := "TestMessage_pluralForm_ZeroAsOther"
 	msgId := "mid"
 	data := map[string]interface{}{"Other": other}
 	msg, err := ParseMessage(msgId, data)
@@ -172,10 +172,11 @@ func TestMessage_pluralForm_alternative_zero(t *testing.T) {
 	}
 }
 
-func TestMessage_pluralForm_alternative_one(t *testing.T) {
-	testName := "TestMessage_pluralForm_alternative_one"
+func TestMessage_pluralForm_OneAsFewOrOther(t *testing.T) {
+	testName := "TestMessage_pluralForm_OneAsFewOrOther"
 	msgId := "mid"
 	{
+		// "few" takes priority over "other" when "one" is absent
 		data := map[string]interface{}{"Few": few, "Other": other}
 		msg, err := ParseMessage(msgId, data)
 		if msg == nil || err != nil {
@@ -197,10 +198,11 @@ func TestMessage_pluralForm_alternative_one(t *testing.T) {
 	}
 }
 
-func TestMessage_pluralForm_alternative_two(t *testing.T) {
-	testName := "TestMessage_pluralForm_alternative_two"
+func TestMessage_pluralForm_TwoAsManyOrOther(t *testing.T) {
+	testName := "TestMessage_pluralForm_TwoAsManyOrOther"
 	msgId := "mid"
 	{
+		// "many" takes priority over "other" when "two" is absent
 		data := map[string]interface{}{"Many": many, "Other": other}
 		msg, err := ParseMessage(msgId, data)
 		if msg == nil || err != nil {
@@ -222,6 +224,32 @@ func TestMessage_pluralForm_alternative_two(t *testing.T) {
 	}
 }
 
+func TestMessage_pluralForm_GreaterThanTwoAsManyOrOther(t *testing.T) {
+	testName := "TestMessage_pluralForm_GreaterThanTwoAsManyOrOther"
+	msgId := "mid"
+	{
+		// "many" takes priority over "other"
+		data := map[string]interface{}{"Many": many, "Other": other}
+		msg, err := ParseMessage(msgId, data)
+		if msg == nil || err != nil {
+			t.Fatalf("%s failed: %s", testName, err)
+		}
+		if e, v := many, msg.pluralFormTemplate(&LocalizeConfig{PluralCount: 3}); v != e {
+			t.Fatalf("%s failed (%v), expect [%s] but received [%s]", testName, 2, e, v)
+		}
+	}
+	{
+		data := map[string]interface{}{"Other": other}
+		msg, err := ParseMessage(msgId, data)
+		if msg == nil || err != nil {
+			t.Fatalf("%s failed: %s", testName, err)
+		}
+		if e, v := other, msg.pluralFormTemplate(&LocalizeConfig{PluralCount: 3}); v != e {
+			t.Fatalf("%s failed (%v), expect [%s] but received [%s]", testName, 2, e, v)
+		}
+	}
+}
+
 func TestMessage_render(t *testing.T) {
 	testName := "TestMessage_render"
 	msgId := "mid"
@@ -231,7 +259,7 @@ func TestMessage_render(t *testing.T) {
 		t.Fatalf("%s failed: %s", testName, err)
 	}
 	cfg := &LocalizeConfig{TemplateData: map[string]interface{}{"data": "value"}}
-	expected := map[int]string{-2: other, -1: other, 0: zero, 1: one, 2: two, 3: other, 4: other}
+	expected := map[int]string{-2: other, -1: other, 0: zero, 1: one, 2: two, 3: many, 4: many}
 	for k, _e := range expected {
 		cfg.PluralCount = k
 		v := msg.render(cfg)
