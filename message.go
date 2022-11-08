@@ -11,7 +11,7 @@ import (
 	"github.com/btnguyen2k/consu/reddo"
 )
 
-// ParseMessage parses data and returns a new message.
+// ParseMessage parses data and returns a new Message instance.
 //
 // data must be either a string, or a map[string]string. If data is a string, the Message is constructed
 // with data is the value of the plural form "other".
@@ -146,6 +146,11 @@ func (m *Message) pluralFormTemplate(cfg *LocalizeConfig) string {
 		}
 		return m.Other
 	default:
+		if pluralForm > 0 {
+			if m.Many != "" {
+				return m.Many
+			}
+		}
 		return m.Other
 	}
 }

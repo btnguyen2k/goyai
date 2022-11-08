@@ -15,7 +15,7 @@ import (
 
 const (
 	// Version of goyai package
-	Version = "0.1.0"
+	Version = "0.2.0"
 )
 
 // LocaleInfo captures info of a locale package.
@@ -30,6 +30,14 @@ type LocalizeConfig struct {
 	TemplateData map[string]interface{}
 
 	// PluralCount determines which plural form of the message is used. PluralCount must be an integer or nil.
+	// See Message for more information.
+	//
+	// Rule for picking plural form:
+	// - if PluralCount is negative number, nil or not cast-able to integer, the "other" form is chosen.
+	// - if PluralCount is 0, the "zero" form is chosen.
+	// - if PluralCount is 1, one of "one"/"few"/"other" forms is chosen, priority is from left to right (e.g. "one" form has the highest priority, if absent, the next one is checked)
+	// - if PluralCount is 2, one of "two"/"many"/"other" forms is chosen, priority is from left to right (e.g. "two" form has the highest priority, if absent, the next one is checked)
+	// - if PluralCount is 3 or greater, one of "many"/"other" forms is chosen, priority is from left to right (e.g. "many" form has the highest priority, if absent, the next one is checked)
 	PluralCount interface{}
 
 	// DefaultMessage holds the default message where there is no localized one.
@@ -38,8 +46,16 @@ type LocalizeConfig struct {
 
 // I18n is the main interface of goyai package, offering APIs to render a message.
 type I18n interface {
-	// Localize returns a localized message. Config is optional, and only the first supplied config is accounted for.
-	Localize(locale, msgId string, config ...*LocalizeConfig) string
+	// Localize returns a localized message. Params are optional, a param can be either a string, number, boolean or a LocalizeConfig instance.
+	// Note: params can be mixed of strings, numbers and booleans but not LocalizeConfig instances. If there is one or more
+	// LocalizeConfig instances are supplied, only the first one is used; all other params are ignored (including
+	// strings/numbers/booleans and other LocalizeConfig instances).
+	Localize(locale, msgId string, params ...interface{}) string
+
+	// Localise is alias of Localize.
+	//
+	// Available since v0.2.0
+	Localise(locale, msgId string, params ...interface{}) string
 
 	// AvailableLocales returns all defined locale configurations.
 	AvailableLocales() []LocaleInfo

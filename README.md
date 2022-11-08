@@ -53,7 +53,7 @@ vi:
     other: Á chà!
 ```
 
-> Multi-document YAML is curently **not** supported! Only the first document in multi-document YAML file is loaded.
+> Multi-document YAML is currently **not** supported! Only the first document in multi-document YAML file is loaded.
 
 **Load language files and build an I18n instance to use**
 

@@ -1,5 +1,9 @@
 # goyai release notes
 
+## 2022-11-xx - v0.2.0
+
+- Add function `I18n.Localise` which is alias of `I18n.Localize`.
+
 ## 2022-06-22 - v0.1.0
 
 - Support localized text messages, with plural forms.

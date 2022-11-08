@@ -2,6 +2,7 @@ package goyai
 
 import (
 	"log"
+	"regexp"
 	"sort"
 	"sync"
 )
@@ -15,16 +16,61 @@ type Goi18n struct {
 	lock          sync.Mutex
 }
 
-// Localize implements I18n.Localize
-func (i *Goi18n) Localize(locale, msgId string, config ...*LocalizeConfig) string {
-	var cfg *LocalizeConfig
-	if len(config) > 0 && config[0] != nil {
-		cfg = config[0]
-	}
+// Localise implements I18n.Localise
+func (i *Goi18n) Localise(locale, msgId string, params ...interface{}) string {
+	return i.Localize(locale, msgId, params...)
+}
 
+func _extractFirstConfig(params ...interface{}) *LocalizeConfig {
+	for _, param := range params {
+		if cfg, ok := param.(LocalizeConfig); ok {
+			return &cfg
+		}
+		if cfg, ok := param.(*LocalizeConfig); ok && cfg != nil {
+			return cfg
+		}
+	}
+	return nil
+}
+
+var rePlaceholderToken = regexp.MustCompile(`{{\$?\.([\w]+).*?}}`)
+
+func _buildTemplateData(msg string, params ...interface{}) map[string]interface{} {
+	templateData := make(map[string]interface{})
+	forwardMap := make(map[string]int)
+	reverseMap := make(map[int]string)
+	matches := rePlaceholderToken.FindAllStringSubmatch(msg, -1)
+	index := 0
+	for _, match := range matches {
+		token := match[1]
+		if _, ok := forwardMap[token]; !ok {
+			forwardMap[token] = index
+			reverseMap[index] = token
+			index++
+		}
+	}
+	index = 0
+	for _, param := range params {
+		switch v := param.(type) {
+		case string, bool, int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+			if token, ok := reverseMap[index]; ok {
+				templateData[token] = v
+			}
+		}
+		index++
+	}
+	return templateData
+}
+
+// Localize implements I18n.Localize
+func (i *Goi18n) Localize(locale, msgId string, params ...interface{}) string {
+	cfg := _extractFirstConfig(params...)
 	var msg string
 	localizedMessage := i.getLocalizedMessage(msgId, locale, i.defaultLocale)
 	if localizedMessage != nil {
+		if cfg == nil && len(params) > 0 {
+			cfg = &LocalizeConfig{TemplateData: _buildTemplateData(localizedMessage.Other, params...)}
+		}
 		msg = localizedMessage.render(cfg)
 	}
 	if msg == "" {
